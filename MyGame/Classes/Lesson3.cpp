@@ -28,12 +28,28 @@ bool Lesson3::init()
     this->mySprite->setPosition(Vec2(50, 50));
 
     // Sequence
-    auto moveTo = MoveTo::create(2, Vec2(200, 100));
+    /*auto moveTo = MoveTo::create(2, Vec2(200, 100));
     auto rotateBy = RotateBy::create(2, 360);
     auto scaleTo = ScaleTo::create(2, 5);
     auto sequence = Sequence::create(moveTo, rotateBy, scaleTo, nullptr);
-    mySprite->runAction(sequence);
+    mySprite->runAction(sequence);*/
 
+
+    // Easing
+    /*auto moveTo = MoveTo::create(2, Vec2(200, 100));
+    auto easeBounceIn = EaseBounceIn::create(moveTo->clone());
+    this->mySprite->runAction(easeBounceIn);*/
+
+    // Bouncing action
+    auto moveBy = MoveBy::create(2, Vec2(100, 100));
+    auto move_ease_in = EaseBounceIn::create(moveBy->clone());
+    auto move_ease_in_back = move_ease_in->reverse();
+
+    auto delay = DelayTime::create(0.25);
+
+    auto sequence = Sequence::create(move_ease_in, delay, move_ease_in_back, delay->clone(), nullptr);
+
+    this->mySprite->runAction(RepeatForever::create(sequence));
 
 
     return true;
