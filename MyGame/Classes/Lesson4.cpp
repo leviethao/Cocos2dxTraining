@@ -44,12 +44,12 @@ bool Lesson4::init()
 void Lesson4::update(float dt) {
     // Handle update game state here
 
-    Vec2 curPos = this->mySprite->getPosition();
+    /*Vec2 curPos = this->mySprite->getPosition();
     Vec2 deltaMove = this->mouseLoc - curPos;
     if (abs(deltaMove.x) > 5 && abs(deltaMove.y) > 5) {
         Vec2 newPos = curPos + this->speed * dt * this->direction;
         this->mySprite->setPosition(newPos);
-    }
+    }*/
 }
 
 void Lesson4::onMouseDown(Event* event) {
