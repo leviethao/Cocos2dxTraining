@@ -28,6 +28,8 @@
 #include "Test.h"
 #include "Lesson4.h"
 #include "Lesson4Continue.h"
+#include "Test5.h"
+#include "Lesson5.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -116,7 +118,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     //auto scene = Lesson3::createScene();
     //auto scene = Test::createScene();
     //auto scene = Lesson4::createScene();
-    auto scene = Lesson4Continue::createScene();
+    //auto scene = Lesson4Continue::createScene();
+    //auto scene = Test5::createScene();
+    auto scene = Lesson5::createScene();
 
     // run
     director->runWithScene(scene);
