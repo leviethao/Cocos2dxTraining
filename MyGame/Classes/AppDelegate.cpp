@@ -30,6 +30,8 @@
 #include "Lesson4Continue.h"
 #include "Test5.h"
 #include "Lesson5.h"
+#include "Test6.h"
+#include "Lesson6.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -87,7 +89,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     // turn on display FPS
-    director->setDisplayStats(true);
+    //director->setDisplayStats(true);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
@@ -120,7 +122,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
     //auto scene = Lesson4::createScene();
     //auto scene = Lesson4Continue::createScene();
     //auto scene = Test5::createScene();
-    auto scene = Lesson5::createScene();
+    //auto scene = Lesson5::createScene();
+    //auto scene = Test6::createScene();
+    auto scene = Lesson6::createScene();
+
+    // Physics world debug draw
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+
 
     // run
     director->runWithScene(scene);
