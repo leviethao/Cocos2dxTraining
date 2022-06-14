@@ -32,6 +32,8 @@
 #include "Lesson5.h"
 #include "Test6.h"
 #include "Lesson6.h"
+#include "Test7.h"
+#include "Lesson7.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -117,17 +119,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     //auto scene = HelloWorld::createScene();
-    //auto scene = Lesson3::createScene();
-    //auto scene = Test::createScene();
-    //auto scene = Lesson4::createScene();
-    //auto scene = Lesson4Continue::createScene();
-    //auto scene = Test5::createScene();
-    //auto scene = Lesson5::createScene();
-    //auto scene = Test6::createScene();
-    auto scene = Lesson6::createScene();
+    auto scene = Lesson7::createScene();
 
     // Physics world debug draw
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    //scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 
     // run
