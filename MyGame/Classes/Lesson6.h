@@ -14,7 +14,7 @@ public:
 private:
     cocos2d::Sprite* mySprite;
     cocos2d::Sprite* mySprite2;
-    cocos2d::Sprite* mySprite3;
+    //cocos2d::Sprite* mySprite3;
     void onMouseDown(cocos2d::Event* event);
 
     void initPhysics();

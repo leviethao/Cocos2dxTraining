@@ -24,16 +24,8 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
-#include "Lesson3.h"
-#include "Test.h"
-#include "Lesson4.h"
-#include "Lesson4Continue.h"
-#include "Test5.h"
-#include "Lesson5.h"
-#include "Test6.h"
-#include "Lesson6.h"
-#include "Test7.h"
-#include "Lesson7.h"
+#include "Lesson8IntroScene.h"
+#include "Lesson8GameScene.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -118,8 +110,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene. it's an autorelease object
-    //auto scene = HelloWorld::createScene();
-    auto scene = Lesson7::createScene();
+
+    auto scene = Lesson8IntroScene::createScene();
+    
+    
+    //auto scene = Lesson8GameScene::createScene();
 
     // Physics world debug draw
     //scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
