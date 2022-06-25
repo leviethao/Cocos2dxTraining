@@ -107,12 +107,16 @@ bool Lesson9::init()
 //}
 
 void Lesson9::onMouseDown(Event* event) {
-   
+    this->mySprite->stopAllActions();
+    this->animation = this->createAnimation("Jump", 9, 0.1);
+    auto animate = Animate::create(this->animation);
+    this->mySprite->runAction(Sequence::create(animate,
+        CallFunc::create(CC_CALLBACK_0(Lesson9::run, this)), nullptr));
 }
 
 void Lesson9::initAnimation() {
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile("animations/run.plist");
-    //SpriteFrameCache::getInstance()->addSpriteFramesWithFile("animations/jump.plist");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("animations/jump.plist");
 
     this->mySprite = Sprite::createWithSpriteFrameName("Run (1).png");
     this->mySprite->setPosition(200, 200);
@@ -135,4 +139,11 @@ Animation* Lesson9::createAnimation(string prefixName, int pFramesOrder, float d
 
     auto _animation = Animation::createWithSpriteFrames(animFrames, delay);
     return _animation;
+}
+
+void Lesson9::run() {
+    this->mySprite->stopAllActions();
+    this->animation = this->createAnimation("Run", 8, 0.1);
+    auto animate = Animate::create(this->animation);
+    this->mySprite->runAction(RepeatForever::create(animate));
 }

@@ -29,6 +29,8 @@ public:
     
     cocos2d::Animation* animation;
 
+
+    void run();
     // implement the "static create()" method manually
     CREATE_FUNC(Lesson9);
     
