@@ -20,6 +20,9 @@ void Avenger::init()
 {
 	this->setSpeed(50);
 	this->setDirection(Vec2::ZERO);
+	this->damage = 20;
+	this->maxHP = 10;
+	this->hp = 10;
 }
 
 void Avenger::update(float dt) {

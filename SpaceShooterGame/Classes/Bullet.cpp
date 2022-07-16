@@ -2,7 +2,7 @@
 
 USING_NS_CC;
 
-Bullet::Bullet(ContactType contactType):Entity("Bullet.png") {
+Bullet::Bullet(ContactType contactType):Entity(contactType == ContactType::PlayerBullet ? "PlayerBullet.png" : "EnemyBullet.png") {
 	this->sprite->setTag((int)contactType);
 	switch (contactType) {
 	case ContactType::EnemyBullet:
@@ -17,6 +17,7 @@ Bullet::Bullet(ContactType contactType):Entity("Bullet.png") {
 		break;
 	}
 	inUse = false;
+	this->init();
 }
 
 Bullet::~Bullet() {
@@ -26,6 +27,10 @@ Bullet::~Bullet() {
 void Bullet::init()
 {
 	Entity::init();
+
+	this->damage = this->sprite->getTag() == (int)ContactType::PlayerBullet ? 20 : 10;
+	this->maxHP = 1;
+	this->hp = 1;
 }
 
 void Bullet::setInUse(bool inUse) {

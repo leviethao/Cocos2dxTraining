@@ -4,6 +4,7 @@
 //#include <math.h>
 #include "Avenger.h"
 #include "Raptor.h"
+#include "ClosingScene.h"
 
 USING_NS_CC;
 
@@ -89,11 +90,17 @@ void GameManager::spawnEnemies() {
 }
 
 void GameManager::update(float dt) {
+	player->update(dt);
 	for (Entity* enemy : enemies) {
 		if (enemy != NULL) {
 			enemy->update(dt);
 		}
 	}
+}
+
+void GameManager::addEntity(Entity* entity) {
+	world->addChild(entity->getSprite());
+	entities.push_back(entity);
 }
 
 Entity* GameManager::findEntity(Sprite* sprite) {
@@ -115,8 +122,8 @@ void GameManager::destroyEntity(Entity* entity) {
 	entity->destroy();
 	delete entity;
 
-	(*_entity) = NULL;
-	(*_enemy) = NULL;
+	if (_entity != entities.end()) (*_entity) = NULL;
+	if (_enemy != enemies.end()) (*_enemy) = NULL;
 }
 
 void GameManager::pause() {
@@ -127,4 +134,9 @@ void GameManager::pause() {
 void GameManager::resume() {
 	world->resume();
 	player->getSprite()->resume();
+}
+
+void GameManager::end() {
+	auto closingScene = ClosingScene::create();
+	Director::getInstance()->replaceScene(closingScene);
 }

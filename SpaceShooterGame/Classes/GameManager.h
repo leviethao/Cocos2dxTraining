@@ -26,6 +26,7 @@ public:
 	static Vec2 getVisibleOrigin();
 	static Player* getPlayer();
 	static void setPlayer(Player* player);
+	static void addEntity(Entity* entity);
 	static Entity* findEntity(Sprite* sprite);
 	static void destroyEntity(Entity* entity);
 
@@ -34,6 +35,7 @@ public:
 	static void update(float dt);
 	static void pause();
 	static void resume();
+	static void end();
 };
 
 #endif // __GAME_MANAGER_H__

@@ -19,6 +19,7 @@ public:
 	Player();
 	~Player();
 	void init();
+	void update(float dt);
 	void shooting();
 	void setIsShooting(bool isShooting);
 	void takeDamage(float damage);

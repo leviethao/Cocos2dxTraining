@@ -27,6 +27,10 @@ bool ClosingScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+    auto label = Label::createWithSystemFont("Game Over", "Arial", 30);
+    addChild(label);
+    label->setPosition(visibleSize / 2);
+
     return true;
 }
 

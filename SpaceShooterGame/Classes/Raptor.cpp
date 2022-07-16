@@ -22,6 +22,9 @@ Raptor::~Raptor() {
 void Raptor::init()
 {
 	this->setSpeed(50);
+	this->damage = 20;
+	this->maxHP = 50;
+	this->hp = 50;
 	//this->shooting(Vec2(1, 1));
 	// Schedule shooting
 	
@@ -51,7 +54,7 @@ void Raptor::shooting(Vec2 aimDirection) {
 	sBullet->setRotation(angle);
 	bullet->setSpeed(100);
 	bullet->setDirection(aimDirection);
-	GameManager::getWorld()->addChild(sBullet);
+	GameManager::addEntity(bullet);
 }
 
 void Raptor::update(float dt) {

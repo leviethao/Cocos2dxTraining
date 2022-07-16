@@ -75,7 +75,7 @@ bool GameScene::init()
     // Init player
     this->player = new Player();
     this->player->getSprite()->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
-    addChild(this->player->getSprite());
+    GameManager::addEntity(player);
     GameManager::setPlayer(player);
 
 
@@ -91,7 +91,7 @@ bool GameScene::init()
 
 void GameScene::update(float dt) {
     GameManager::update(dt);
-    this->player->takeDamage(30 * dt);
+    //this->player->takeDamage(30 * dt);
     this->updatePlayerInfo();
 }
 
@@ -152,23 +152,40 @@ bool GameScene::onContactBegin(PhysicsContact& contact) {
     Node* nodeA = contact.getShapeA()->getBody()->getNode();
     Node* nodeB = contact.getShapeB()->getBody()->getNode();
 
-    /*nodeA->setColor(Color3B::BLACK);
-    nodeB->setColor(Color3B::BLACK);*/
-
     if (nodeA && nodeB) {
-        if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::PlayerBullet) {
-            Entity* entity = GameManager::findEntity((Sprite*)nodeA);
-            if (entity) {
-                GameManager::destroyEntity(entity);
-            }
-        }
-        else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::PlayerBullet) {
-            Entity* entity = GameManager::findEntity((Sprite*)nodeB);
-            if (entity) {
-                GameManager::destroyEntity(entity);
-            }
-        }
+        /*nodeA->setColor(Color3B::BLACK);
+        nodeB->setColor(Color3B::BLACK);*/
+
+        Entity* entityA = GameManager::findEntity((Sprite*)nodeA);
+        Entity* entityB = GameManager::findEntity((Sprite*)nodeB);
+        float damageA = entityA->getDamage();
+        float damageB = entityB->getDamage();
+        entityA->takeDamage(damageB);
+        entityB->takeDamage(damageA);
     }
+    
+    //if (nodeA && nodeB) {
+    //    // Enemy & PlayerBullet
+    //    if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::PlayerBullet) {
+    //        Entity* entity = GameManager::findEntity((Sprite*)nodeA);
+    //        if (entity) {
+    //            //GameManager::destroyEntity(entity);
+    //        }
+    //    }
+    //    else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::PlayerBullet) {
+    //        Entity* entity = GameManager::findEntity((Sprite*)nodeB);
+    //        if (entity) {
+    //            //GameManager::destroyEntity(entity);
+    //        }
+    //    }
+    //    // Player & Enemy
+    //    else if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::Player) {
+
+    //    }
+    //    else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::Player) {
+
+    //    }
+    //}
 
     return true;
 }

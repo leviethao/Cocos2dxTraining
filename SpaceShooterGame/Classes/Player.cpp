@@ -20,6 +20,7 @@ void Player::init()
 {
 	this->setMaxHP(100);
 	this->setHP(100);
+	this->damage = 100;
 	this->heart = 1;
 	this->setSpeed(100);
 }
@@ -40,7 +41,7 @@ void Player::shooting() {
 	sBullet->setRotation(angle);
 	bullet->setSpeed(200);
 	bullet->setDirection(aimDirection);
-	GameManager::getWorld()->addChild(sBullet);
+	GameManager::addEntity(bullet);
 }
 
 void Player::setIsShooting(bool isShooting) {
@@ -63,7 +64,6 @@ void Player::takeDamage(float damage) {
 		}
 		else {
 			this->hp = 0;
-			this->die();
 		}
 	}
 }
@@ -79,5 +79,17 @@ void Player::setHeart(int heart) {
 void Player::die() {
 	this->body->setVelocity(Vec2::ZERO);
 	this->sprite->pause();
+	auto node = Node::create();
+	node->scheduleOnce([&](float dt) {
+		GameManager::end();
+	}, 5, "EndGame");
+	GameManager::getWorld()->addChild(node);
 	GameManager::getWorld()->pause();
+
+}
+
+void Player::update(float dt) {
+	if (this->hp <= 0) {
+		this->die();
+	}
 }
