@@ -15,6 +15,10 @@ protected:
     Vec2 direction;
     PhysicsBody* body;
 
+    float maxHP;
+    float hp;
+    float damage;
+
 public:
     enum Enemies {
         Avenger,
@@ -32,6 +36,13 @@ public:
     void setDirection(Vec2 direction);
     Vec2 getDirection();
     Sprite* getSprite();
+    void setMaxHP(float hp);
+    float getMaxHP();
+    void setHP(float hp);
+    float getHP();
+    void setDamage(float damage);
+    float getDamage();
+    virtual void takeDamage(float damage);
 };
 
 #endif // __ENTITY_H__

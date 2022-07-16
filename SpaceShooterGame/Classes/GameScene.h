@@ -8,11 +8,15 @@ class GameScene : public cocos2d::Scene
 {
 private:
     Player* player;
+    Node* playerInfo;
+
     void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
     void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
     bool onContactBegin(PhysicsContact& contact);
     void onContactSeparate(PhysicsContact& contact);
     void initContactListener();
+    void initPlayerInfoUI();
+    void updatePlayerInfo();
 public:
     static cocos2d::Scene* createScene();
 

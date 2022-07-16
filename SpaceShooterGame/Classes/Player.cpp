@@ -18,6 +18,9 @@ Player::~Player() {
 
 void Player::init()
 {
+	this->setMaxHP(100);
+	this->setHP(100);
+	this->heart = 1;
 	this->setSpeed(100);
 }
 
@@ -49,4 +52,32 @@ void Player::setIsShooting(bool isShooting) {
 	else {
 		this->sprite->unschedule("PlayerShooting");
 	}
+}
+
+void Player::takeDamage(float damage) {
+	this->hp -= damage;
+	if (this->hp <= 0) {
+		if (this->heart > 0) {
+			this->heart--;
+			this->hp = this->maxHP;
+		}
+		else {
+			this->hp = 0;
+			this->die();
+		}
+	}
+}
+
+int Player::getHeart() {
+	return this->heart;
+}
+
+void Player::setHeart(int heart) {
+	this->heart = heart;
+}
+
+void Player::die() {
+	this->body->setVelocity(Vec2::ZERO);
+	this->sprite->pause();
+	GameManager::getWorld()->pause();
 }

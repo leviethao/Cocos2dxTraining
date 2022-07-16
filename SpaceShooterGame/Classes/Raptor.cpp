@@ -32,7 +32,6 @@ void Raptor::init()
 	/*this->sprite->schedule(CC_CALLBACK_1(Raptor::shootingScheduler, this), 1.0f);*/
 	this->sprite->schedule([&](float dt) mutable {
 		this->shooting(this->getDirection());
-		//log("haha");
 		}, 1, "RaptorShooting");
 }
 

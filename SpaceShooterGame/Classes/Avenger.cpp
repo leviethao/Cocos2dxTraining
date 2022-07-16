@@ -19,7 +19,7 @@ Avenger::~Avenger() {
 void Avenger::init()
 {
 	this->setSpeed(50);
-	this->setDirection(Vec2(1, 1));
+	this->setDirection(Vec2::ZERO);
 }
 
 void Avenger::update(float dt) {

@@ -65,7 +65,7 @@ void GameManager::spawnEnemies() {
 
 	Vec2 direction = Vec2(positionX, positionY);
 	direction.normalize();
-	const float padding = -100;
+	const float padding = 100;
 	Vec2 position = direction * (getVisibleSize().width / 2 + padding) + getVisibleSize() / 2;
 
 	Entity* enemy = NULL;
@@ -117,4 +117,14 @@ void GameManager::destroyEntity(Entity* entity) {
 
 	(*_entity) = NULL;
 	(*_enemy) = NULL;
+}
+
+void GameManager::pause() {
+	player->getSprite()->pause();
+	world->pause();
+}
+
+void GameManager::resume() {
+	world->resume();
+	player->getSprite()->resume();
 }

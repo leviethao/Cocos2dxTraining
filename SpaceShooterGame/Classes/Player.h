@@ -11,12 +11,20 @@ class Player : public Entity
 {
 private:
 	Bullet* bullet;
+
+	float exp;
+	float level;
+	int heart;
 public:
 	Player();
 	~Player();
 	void init();
 	void shooting();
 	void setIsShooting(bool isShooting);
+	void takeDamage(float damage);
+	int getHeart();
+	void setHeart(int heart);
+	void die();
 };
 
 #endif // __PLAYER_H__

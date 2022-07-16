@@ -78,12 +78,21 @@ bool GameScene::init()
     addChild(this->player->getSprite());
     GameManager::setPlayer(player);
 
+
+    // GUI
+    this->initPlayerInfoUI();
+    
+    /*this->player->getSprite()->setName("Player");
+    log("player node name: %s", this->player->getSprite()->getName().c_str());*/
+
     scheduleUpdate();
     return true;
 }
 
 void GameScene::update(float dt) {
     GameManager::update(dt);
+    this->player->takeDamage(30 * dt);
+    this->updatePlayerInfo();
 }
 
 void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event) {
@@ -143,25 +152,19 @@ bool GameScene::onContactBegin(PhysicsContact& contact) {
     Node* nodeA = contact.getShapeA()->getBody()->getNode();
     Node* nodeB = contact.getShapeB()->getBody()->getNode();
 
-    /*if (nodeA->getTag() == (int)ContactType::EnemyBullet) {
-        nodeA->removeFromParentAndCleanup(true);
-    }
-    else if (nodeB->getTag() == (int)ContactType::EnemyBullet) {
-        nodeB->removeFromParentAndCleanup(true);
-    }*/
+    /*nodeA->setColor(Color3B::BLACK);
+    nodeB->setColor(Color3B::BLACK);*/
 
     if (nodeA && nodeB) {
         if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::PlayerBullet) {
             Entity* entity = GameManager::findEntity((Sprite*)nodeA);
             if (entity) {
-                //entity->getSprite()->setVisible(false);
                 GameManager::destroyEntity(entity);
             }
         }
         else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::PlayerBullet) {
             Entity* entity = GameManager::findEntity((Sprite*)nodeB);
             if (entity) {
-                //entity->getSprite()->setVisible(false);
                 GameManager::destroyEntity(entity);
             }
         }
@@ -176,4 +179,61 @@ void GameScene::onContactSeparate(PhysicsContact& contact) {
 
     /*nodeA->setColor(Color3B::WHITE);
     nodeB->setColor(Color3B::WHITE);*/
+}
+
+
+void GameScene::initPlayerInfoUI() {
+    this->playerInfo = Node::create();
+    playerInfo->setAnchorPoint(Vec2(0, 0.5));
+
+    // HP
+    Sprite* hpBarBG = Sprite::create("hpBarBG.png");
+    hpBarBG->setName("hpBarBG");
+    hpBarBG->setContentSize(Size(200, 20));
+    hpBarBG->setAnchorPoint(Vec2(0, 0.5));
+
+    Sprite* hpBar = Sprite::create("hpBar.png");
+    hpBar->setName("hpBar");
+    hpBar->setContentSize(Size(50, 20));
+    hpBar->setAnchorPoint(Vec2(0, 0.5));
+
+    playerInfo->addChild(hpBarBG);
+    playerInfo->addChild(hpBar);
+
+    // Heart: Heart Count & Heart Icon
+    Node* heart = Node::create();
+    heart->setName("heart");
+    heart->setAnchorPoint(Vec2(0, 0.5));
+
+    Label* heartLabel = Label::createWithTTF("5", "fonts/Marker Felt.ttf", 20);
+    heartLabel->setName("heartLabel");
+    heartLabel->setAnchorPoint(Vec2(0, 0.5));
+
+    Sprite* heartIcon = Sprite::create("heart.png");
+    heartIcon->setContentSize(Size(20, 20));
+    heartIcon->setAnchorPoint(Vec2(0, 0.5));
+    const float padding = 8;
+    heartIcon->setPosition(Vec2(heartLabel->getContentSize().width + padding, 0));
+
+    heart->addChild(heartLabel);
+    heart->addChild(heartIcon);
+
+    heart->setPosition(Vec2(hpBarBG->getContentSize().width + 16, 0));
+    playerInfo->addChild(heart);
+
+    addChild(playerInfo);
+    playerInfo->setPosition(50, 50);
+}
+
+void GameScene::updatePlayerInfo() {
+    auto hpBarBG = this->playerInfo->getChildByName("hpBarBG");
+    auto hpBar = this->playerInfo->getChildByName("hpBar");
+    auto heartLabel = this->playerInfo->getChildByName("heart")->getChildByName("heartLabel");
+
+    const Size hpBarMaxSize = hpBarBG->getContentSize();
+    Size hpBarSize = hpBarMaxSize;
+    hpBarSize.width = this->player->getHP() / this->player->getMaxHP() * hpBarMaxSize.width;
+    hpBar->setContentSize(hpBarSize);
+
+    ((Label*)heartLabel)->setString(std::to_string(this->player->getHeart()));
 }

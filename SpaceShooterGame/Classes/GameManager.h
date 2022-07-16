@@ -32,6 +32,8 @@ public:
 	static void spawnEnemies();
 	static void start();
 	static void update(float dt);
+	static void pause();
+	static void resume();
 };
 
 #endif // __GAME_MANAGER_H__
