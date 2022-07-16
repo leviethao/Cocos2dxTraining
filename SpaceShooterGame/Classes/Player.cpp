@@ -39,7 +39,7 @@ void Player::shooting() {
 	float radian = aimDirection.getAngle(Vec2(0, 1));
 	float angle = radian * 180 / M_PI;
 	sBullet->setRotation(angle);
-	bullet->setSpeed(200);
+	bullet->setSpeed(400);
 	bullet->setDirection(aimDirection);
 	GameManager::addEntity(bullet);
 }

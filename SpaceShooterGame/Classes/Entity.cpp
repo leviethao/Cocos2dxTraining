@@ -79,10 +79,10 @@ void Entity::setDamage(float damage) {
 
 void Entity::takeDamage(float damage) {
     this->hp -= damage;
-    log("%d HP = %.2f", this->sprite->getTag(), this->hp);
+
     if (this->hp <= 0) { 
         this->hp = 0;
-        this->sprite->setVisible(false);
+        //this->sprite->setVisible(false);
         GameManager::destroyEntity(this);
     }
 }
