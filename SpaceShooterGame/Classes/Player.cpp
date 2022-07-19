@@ -22,6 +22,7 @@ void Player::init()
 	this->setHP(100);
 	this->damage = 100;
 	this->heart = 1;
+	this->level = 1;
 	this->setSpeed(300);
 
 	this->initEventListener();
@@ -44,6 +45,11 @@ void Player::shooting() {
 	bullet->setSpeed(400);
 	bullet->setDirection(aimDirection);
 	GameManager::addEntity(bullet);
+
+	// Shooting guns
+	for (GunLV2* gun : this->guns) {
+		gun->shooting();
+	}
 }
 
 void Player::setIsShooting(bool isShooting) {
@@ -174,3 +180,14 @@ void Player::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event) {
 	newDirection.normalize();
 	setDirection(newDirection);
 }
+
+void Player::levelUp() {
+	this->level++;
+	if (this->level == 2) {
+		GunLV2* gunLV2 = new GunLV2();
+		gunLV2->getSprite()->setPosition(Vec2(sprite->getContentSize().width / 2, 0));
+		this->sprite->addChild(gunLV2->getSprite());
+		this->guns.push_back(gunLV2);
+	}
+}
+

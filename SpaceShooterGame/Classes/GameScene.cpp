@@ -43,7 +43,7 @@ bool GameScene::init()
     this->initContactListener();
 
     // Init player
-    this->player = new Player();
+    this->player = GameManager::getPlayer() ? GameManager::getPlayer() : new Player();
     this->player->getSprite()->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
     this->player->getSprite()->setLocalZOrder(1);
     GameManager::addEntity(player);
@@ -229,4 +229,8 @@ void GameScene::initBackground() {
     auto windowLayer = LayerColor::create(Color4B(100, 10, 10, 255));
     windowLayer->setContentSize(GameManager::getVisibleSize());
     addChild(windowLayer);
+
+    schedule([&](float dt) {
+        player->levelUp();
+    }, 5, "levelUP");
 }

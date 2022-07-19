@@ -40,6 +40,7 @@ public:
 	static void end();
 	static void pause();
 	static void resume();
+	static void nextStage();
 };
 
 #endif // __GAME_MANAGER_H__

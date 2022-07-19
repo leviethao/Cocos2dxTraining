@@ -5,6 +5,7 @@
 #include "Avenger.h"
 #include "Raptor.h"
 #include "ClosingScene.h"
+#include "GameScene.h"
 
 USING_NS_CC;
 
@@ -13,7 +14,7 @@ std::vector<Entity*> GameManager::enemies;
 std::vector<Entity*> GameManager::entities;
 bool GameManager::isPause = false;
 
-Player* GameManager::player;
+Player* GameManager::player = NULL;
 
 GameManager::GameManager() {
 }
@@ -104,8 +105,11 @@ void GameManager::update(float dt) {
 }
 
 void GameManager::addEntity(Entity* entity) {
-	world->addChild(entity->getSprite());
-	entities.push_back(entity);
+	auto foundEntity = std::find(entities.begin(), entities.end(), entity);
+	if (foundEntity == entities.end()) {
+		world->addChild(entity->getSprite());
+		entities.push_back(entity);
+	}
 }
 
 Entity* GameManager::findEntity(Sprite* sprite) {
@@ -174,3 +178,6 @@ void GameManager::resume() {
 	resumeGame();
 }
 
+void GameManager::nextStage() {
+	
+}

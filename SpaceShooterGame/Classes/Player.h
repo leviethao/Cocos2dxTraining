@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "Entity.h"
 #include "Bullet.h"
+#include "GunLV2.h"
 
 USING_NS_CC;
 
@@ -11,6 +12,7 @@ class Player : public Entity
 {
 private:
 	Bullet* bullet;
+	std::vector<GunLV2*> guns;
 
 	float exp;
 	float level;
@@ -30,6 +32,7 @@ public:
 	int getHeart();
 	void setHeart(int heart);
 	void die();
+	void levelUp();
 };
 
 #endif // __PLAYER_H__
