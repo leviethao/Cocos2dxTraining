@@ -1,6 +1,10 @@
 #ifndef __CONSTANT_H__
 #define __CONSTANT_H__
 
+#include "cocos2d.h"
+
+USING_NS_CC;
+
 enum class ContactType {
 	None,
 	Enemy,
@@ -30,7 +34,8 @@ const int PLAYER_BULLET_CATEGORY_BITMASK = 0x01; // 0001
 const int PLAYER_BULLET_COLLISION_BITMASK = 0xFFFFFFFF;
 
 
-
+// Bouding Box
+const Size BOUNDING_BOX = Size(1200, 1200);
 
 
 #endif // !__CONSTANT_H__

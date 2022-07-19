@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "GameManager.h"
 #include "Constant.h"
+#include "ui/CocosGUI.h"
 
 USING_NS_CC;
 
@@ -38,107 +39,33 @@ bool GameScene::init()
     this->getPhysicsWorld()->setGravity(Vec2::ZERO);
     this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
-    // Init mouse event listener
-    auto mouseListener = EventListenerMouse::create();
-    mouseListener->onMouseDown = [&](Event* event) {
-        EventMouse* e = (EventMouse*)event;
-        Vec2 location = e->getLocationInView();
-        this->player->setIsShooting(true);
-    };
-    mouseListener->onMouseUp = [&](Event* event) {
-        EventMouse* e = (EventMouse*)event;
-        Vec2 location = e->getLocationInView();
-
-        this->player->setIsShooting(false);
-    };
-    mouseListener->onMouseMove = [&](Event* event) {
-        EventMouse* e = (EventMouse*)event;
-        Vec2 location = e->getLocationInView();
-
-        //Aim to mouse location
-        Vec2 aimDirection = location - this->player->getSprite()->getPosition();
-        float radian = aimDirection.getAngle(Vec2(0, 1));
-        float angle = radian * 180 / M_PI;
-        this->player->getSprite()->setRotation(angle);
-    };
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
-
-    // Init keyboard event listeners
-    auto keyboardListener = EventListenerKeyboard::create();
-    keyboardListener->onKeyPressed = CC_CALLBACK_2(GameScene::onKeyPressed, this);
-    keyboardListener->onKeyReleased = CC_CALLBACK_2(GameScene::onKeyReleased, this);
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
-
     // Init contact listeners
     this->initContactListener();
 
     // Init player
     this->player = new Player();
     this->player->getSprite()->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
+    this->player->getSprite()->setLocalZOrder(1);
     GameManager::addEntity(player);
     GameManager::setPlayer(player);
 
+    // Camera
+    this->initCameraUI();
 
     // GUI
+    this->initBackground();
+    this->initPauseMenu();
     this->initPlayerInfoUI();
-    
-    /*this->player->getSprite()->setName("Player");
-    log("player node name: %s", this->player->getSprite()->getName().c_str());*/
 
     scheduleUpdate();
     return true;
 }
 
 void GameScene::update(float dt) {
-    GameManager::update(dt);
-    //this->player->takeDamage(30 * dt);
     this->updatePlayerInfo();
-}
 
-void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event) {
-    auto player = GameManager::getPlayer();
-    auto newDirection = player->getDirection();
-
-    switch (keyCode) {
-    case EventKeyboard::KeyCode::KEY_W:
-        newDirection.y = 1;
-        break;
-    case EventKeyboard::KeyCode::KEY_S:
-        newDirection.y = -1;
-        break;
-    case EventKeyboard::KeyCode::KEY_A:
-        newDirection.x = -1;
-        break;
-    case EventKeyboard::KeyCode::KEY_D:
-        newDirection.x = 1;
-        break;
-    default:
-        break;
-    }
-
-    newDirection.normalize();
-    player->setDirection(newDirection);
-}
-
-void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event) {
-    auto player = GameManager::getPlayer();
-    auto newDirection = player->getDirection();
-
-    switch (keyCode) {
-    case EventKeyboard::KeyCode::KEY_W:
-    case EventKeyboard::KeyCode::KEY_S:
-        newDirection.y = 0;
-        break;
-    case EventKeyboard::KeyCode::KEY_A:
-    case EventKeyboard::KeyCode::KEY_D:
-        newDirection.x = 0;
-        break;
-    default:
-        break;
-    }
-
-    newDirection.normalize();
-    player->setDirection(newDirection);
+    this->followPlayer();
+    GameManager::update(dt);
 }
 
 void GameScene::initContactListener() {
@@ -163,29 +90,6 @@ bool GameScene::onContactBegin(PhysicsContact& contact) {
         entityA->takeDamage(damageB);
         entityB->takeDamage(damageA);
     }
-    
-    //if (nodeA && nodeB) {
-    //    // Enemy & PlayerBullet
-    //    if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::PlayerBullet) {
-    //        Entity* entity = GameManager::findEntity((Sprite*)nodeA);
-    //        if (entity) {
-    //            //GameManager::destroyEntity(entity);
-    //        }
-    //    }
-    //    else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::PlayerBullet) {
-    //        Entity* entity = GameManager::findEntity((Sprite*)nodeB);
-    //        if (entity) {
-    //            //GameManager::destroyEntity(entity);
-    //        }
-    //    }
-    //    // Player & Enemy
-    //    else if (nodeA->getTag() == (int)ContactType::Enemy && nodeB->getTag() == (int)ContactType::Player) {
-
-    //    }
-    //    else if (nodeB->getTag() == (int)ContactType::Enemy && nodeA->getTag() == (int)ContactType::Player) {
-
-    //    }
-    //}
 
     return true;
 }
@@ -211,7 +115,7 @@ void GameScene::initPlayerInfoUI() {
 
     Sprite* hpBar = Sprite::create("hpBar.png");
     hpBar->setName("hpBar");
-    hpBar->setContentSize(Size(50, 20));
+    hpBar->setContentSize(Size(200, 20));
     hpBar->setAnchorPoint(Vec2(0, 0.5));
 
     playerInfo->addChild(hpBarBG);
@@ -239,7 +143,9 @@ void GameScene::initPlayerInfoUI() {
     playerInfo->addChild(heart);
 
     addChild(playerInfo);
-    playerInfo->setPosition(50, 50);
+    playerInfo->setPosition(Vec2(50, 50) - GameManager::getVisibleSize() / 2);
+
+    playerInfo->setCameraMask((unsigned short)this->cameraUI->getCameraFlag());
 }
 
 void GameScene::updatePlayerInfo() {
@@ -253,4 +159,74 @@ void GameScene::updatePlayerInfo() {
     hpBar->setContentSize(hpBarSize);
 
     ((Label*)heartLabel)->setString(std::to_string(this->player->getHeart()));
+}
+
+void GameScene::initPauseMenu() {
+    ui::Button* btnPause = ui::Button::create("btnPauseNormal.png", "btnPauseSelected.png", "btnPauseNormal.png");
+    btnPause->addTouchEventListener([&](Ref* sender, ui::Widget::TouchEventType type) {
+        switch (type) {
+        case ui::Widget::TouchEventType::BEGAN:
+            break;
+        case ui::Widget::TouchEventType::ENDED:
+            log("Pressed");
+            GameManager::pause();
+            scheduleOnce([](float dt) {
+                GameManager::resume();
+            }, 3, "resumeGame");
+            break;
+        default:
+            break;
+        }
+    });
+
+    float factor = 30; //GameManager::getVisibleSize().width / 16;
+    float xscale = factor / btnPause->getContentSize().width;
+    float yscale = factor / btnPause->getContentSize().height;
+    btnPause->setScale(xscale, yscale);
+    btnPause->setPosition(Vec2(50, GameManager::getVisibleSize().height - 50) - GameManager::getVisibleSize() / 2);
+    addChild(btnPause);
+    btnPause->setCameraMask((unsigned int)this->cameraUI->getCameraFlag());
+
+    /*auto followPlayer = Follow::create(player->getSprite(), Rect(0,
+        0, 1600, 1200));
+    runAction(followPlayer);*/
+}
+
+void GameScene::followPlayer() {
+    auto camera = getDefaultCamera();
+    auto targetPos = player->getSprite()->getPosition();
+    auto visibleSize = GameManager::getVisibleSize();
+    targetPos.x = clampf(targetPos.x, visibleSize.width / 2 - (BOUNDING_BOX.width - visibleSize.width) / 2,
+        visibleSize.width / 2 + (BOUNDING_BOX.width - visibleSize.width) / 2);
+    targetPos.y = clampf(targetPos.y, visibleSize.height / 2 - (BOUNDING_BOX.height - visibleSize.height) / 2,
+        visibleSize.height / 2 + (BOUNDING_BOX.height - visibleSize.height) / 2);
+    auto curPos = camera->getPosition();
+    curPos = curPos.lerp(targetPos, 0.1);
+    camera->setPosition(curPos);
+}
+
+void GameScene::initCameraUI() {
+    this->cameraUI = Camera::create();
+    this->cameraUI->setCameraFlag(CameraFlag::USER1);
+    addChild(this->cameraUI);
+
+    Vec3 eyePosOld = this->cameraUI->getPosition3D();
+    this->cameraUI->setPosition3D(Vec3(0, 0, eyePosOld.z));
+    this->cameraUI->lookAt(Vec3(0, 0, 0));
+}
+
+void GameScene::initBackground() {
+    auto boundingBoxBorderLayer = LayerColor::create(Color4B(10, 10, 100, 255));
+    boundingBoxBorderLayer->setContentSize(BOUNDING_BOX);
+    boundingBoxBorderLayer->setPosition((boundingBoxBorderLayer->getContentSize() - GameManager::getVisibleSize()) / 2 * -1);
+    addChild(boundingBoxBorderLayer);
+
+    auto boundingBoxInnerLayer = LayerColor::create(Color4B(10, 100, 10, 255));
+    boundingBoxInnerLayer->setContentSize(BOUNDING_BOX - Size(20, 20));
+    boundingBoxInnerLayer->setPosition((boundingBoxInnerLayer->getContentSize() - GameManager::getVisibleSize()) / 2 * -1);
+    addChild(boundingBoxInnerLayer);
+
+    auto windowLayer = LayerColor::create(Color4B(100, 10, 10, 255));
+    windowLayer->setContentSize(GameManager::getVisibleSize());
+    addChild(windowLayer);
 }

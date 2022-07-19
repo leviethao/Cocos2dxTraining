@@ -94,3 +94,14 @@ void Entity::setMaxHP(float maxHP) {
 float Entity::getMaxHP() {
     return this->maxHP;
 }
+
+void Entity::pause() {
+    this->body->setVelocity(Vec2::ZERO);
+    this->sprite->pause();
+}
+
+void Entity::resume() {
+    this->body->setVelocity(this->speed * this->direction);
+    this->sprite->resume();
+}
+

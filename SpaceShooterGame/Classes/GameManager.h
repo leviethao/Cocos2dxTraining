@@ -16,6 +16,10 @@ private:
 	static std::vector<Entity*> enemies;
 	static Player* player;
 	static std::vector<Entity*> entities;
+	static bool isPause;
+
+	static void pauseGame();
+	static void resumeGame();
 public:
 	GameManager();
 	~GameManager();
@@ -33,9 +37,9 @@ public:
 	static void spawnEnemies();
 	static void start();
 	static void update(float dt);
+	static void end();
 	static void pause();
 	static void resume();
-	static void end();
 };
 
 #endif // __GAME_MANAGER_H__

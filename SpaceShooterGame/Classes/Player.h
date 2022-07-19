@@ -15,6 +15,10 @@ private:
 	float exp;
 	float level;
 	int heart;
+
+	void initEventListener();
+	void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
+	void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
 public:
 	Player();
 	~Player();

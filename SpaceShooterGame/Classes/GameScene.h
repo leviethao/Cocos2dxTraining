@@ -9,14 +9,17 @@ class GameScene : public cocos2d::Scene
 private:
     Player* player;
     Node* playerInfo;
+    Camera* cameraUI;
 
-    void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
-    void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
     bool onContactBegin(PhysicsContact& contact);
     void onContactSeparate(PhysicsContact& contact);
     void initContactListener();
     void initPlayerInfoUI();
     void updatePlayerInfo();
+    void initPauseMenu();
+    void followPlayer();
+    void initCameraUI();
+    void initBackground();
 public:
     static cocos2d::Scene* createScene();
 

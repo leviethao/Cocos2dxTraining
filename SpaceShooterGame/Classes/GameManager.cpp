@@ -11,6 +11,7 @@ USING_NS_CC;
 Scene* GameManager::world = NULL;
 std::vector<Entity*> GameManager::enemies;
 std::vector<Entity*> GameManager::entities;
+bool GameManager::isPause = false;
 
 Player* GameManager::player;
 
@@ -90,6 +91,10 @@ void GameManager::spawnEnemies() {
 }
 
 void GameManager::update(float dt) {
+	if (isPause) {
+		pauseGame();
+		return;
+	}
 	player->update(dt);
 	for (Entity* enemy : enemies) {
 		if (enemy != NULL) {
@@ -126,17 +131,46 @@ void GameManager::destroyEntity(Entity* entity) {
 	if (_enemy != enemies.end()) (*_enemy) = NULL;
 }
 
-void GameManager::pause() {
-	player->getSprite()->pause();
-	world->pause();
+void GameManager::pauseGame() {
+	// Pause player
+	player->pause();
+
+	// Pause entities
+	for (Entity* entity : entities) {
+		if (entity != NULL) {
+			entity->pause();
+		}
+	}
+
+	// Pause game world
+	//world->pause();
 }
 
-void GameManager::resume() {
-	world->resume();
-	player->getSprite()->resume();
+void GameManager::resumeGame() {
+	// Resume Player
+	player->resume();
+
+	// Resume entities
+	for (Entity* entity : entities) {
+		if (entity != NULL) {
+			entity->resume();
+		}
+	}
+
+	//world->resume();
 }
 
 void GameManager::end() {
 	auto closingScene = ClosingScene::create();
 	Director::getInstance()->replaceScene(closingScene);
 }
+
+void GameManager::pause() {
+	isPause = true;
+}
+
+void GameManager::resume() {
+	isPause = false;
+	resumeGame();
+}
+

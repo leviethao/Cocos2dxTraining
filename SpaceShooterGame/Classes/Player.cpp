@@ -22,7 +22,9 @@ void Player::init()
 	this->setHP(100);
 	this->damage = 100;
 	this->heart = 1;
-	this->setSpeed(100);
+	this->setSpeed(300);
+
+	this->initEventListener();
 }
 
 void Player::shooting() {
@@ -77,19 +79,98 @@ void Player::setHeart(int heart) {
 }
 
 void Player::die() {
-	this->body->setVelocity(Vec2::ZERO);
-	this->sprite->pause();
 	auto node = Node::create();
 	node->scheduleOnce([&](float dt) {
 		GameManager::end();
 	}, 5, "EndGame");
 	GameManager::getWorld()->addChild(node);
-	GameManager::getWorld()->pause();
-
+	
+	this->pause();
 }
 
 void Player::update(float dt) {
 	if (this->hp <= 0) {
 		this->die();
 	}
+}
+
+void Player::initEventListener() {
+	// Init mouse event listener
+	auto mouseListener = EventListenerMouse::create();
+	mouseListener->onMouseDown = [&](Event* event) {
+		EventMouse* e = (EventMouse*)event;
+		Vec2 location = e->getLocationInView();
+		this->setIsShooting(true);
+	};
+	mouseListener->onMouseUp = [&](Event* event) {
+		EventMouse* e = (EventMouse*)event;
+		Vec2 location = e->getLocationInView();
+
+		this->setIsShooting(false);
+	};
+	mouseListener->onMouseMove = [&](Event* event) {
+		EventMouse* e = (EventMouse*)event;
+		Vec2 location = e->getLocationInView();
+		location = GameManager::getWorld()->getDefaultCamera()->convertToWorldSpaceAR(location - GameManager::getVisibleSize() / 2);
+		
+		//Aim to mouse location
+		Vec2 aimDirection = location - this->getSprite()->getPosition();
+		float radian = aimDirection.getAngle(Vec2(0, 1));
+		float angle = radian * 180 / M_PI;
+		this->getSprite()->setRotation(angle);
+	};
+	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(mouseListener, this->sprite);
+
+
+	// Init keyboard event listeners
+	auto keyboardListener = EventListenerKeyboard::create();
+	keyboardListener->onKeyPressed = CC_CALLBACK_2(Player::onKeyPressed, this);
+	keyboardListener->onKeyReleased = CC_CALLBACK_2(Player::onKeyReleased, this);
+	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyboardListener, this->sprite);
+}
+
+
+
+void Player::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event) {
+	auto newDirection = direction;
+
+	switch (keyCode) {
+	case EventKeyboard::KeyCode::KEY_W:
+		newDirection.y = 1;
+		break;
+	case EventKeyboard::KeyCode::KEY_S:
+		newDirection.y = -1;
+		break;
+	case EventKeyboard::KeyCode::KEY_A:
+		newDirection.x = -1;
+		break;
+	case EventKeyboard::KeyCode::KEY_D:
+		newDirection.x = 1;
+		break;
+	default:
+		break;
+	}
+
+	newDirection.normalize();
+	setDirection(newDirection);
+}
+
+void Player::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event) {
+	auto newDirection = direction;
+
+	switch (keyCode) {
+	case EventKeyboard::KeyCode::KEY_W:
+	case EventKeyboard::KeyCode::KEY_S:
+		newDirection.y = 0;
+		break;
+	case EventKeyboard::KeyCode::KEY_A:
+	case EventKeyboard::KeyCode::KEY_D:
+		newDirection.x = 0;
+		break;
+	default:
+		break;
+	}
+
+	newDirection.normalize();
+	setDirection(newDirection);
 }

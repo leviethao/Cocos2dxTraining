@@ -43,6 +43,8 @@ public:
     void setDamage(float damage);
     float getDamage();
     virtual void takeDamage(float damage);
+    void pause();
+    void resume();
 };
 
 #endif // __ENTITY_H__
