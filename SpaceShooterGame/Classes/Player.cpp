@@ -1,6 +1,10 @@
 #include "Player.h"
 #include "Bullet.h"
 #include "GameManager.h"
+#include "network/HttpClient.h"
+
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
 
 USING_NS_CC;
 
@@ -54,6 +58,10 @@ void Player::shooting() {
 
 void Player::setIsShooting(bool isShooting) {
 	if (isShooting) {
+		// Shooting first bullet
+		this->shooting();
+
+		// Schedule shooting
 		this->sprite->schedule([&](float dt) {
 			this->shooting();
 		}, 0.1, "PlayerShooting");
@@ -95,6 +103,9 @@ void Player::die() {
 }
 
 void Player::update(float dt) {
+	// Super update
+	Entity::update(dt);
+
 	if (this->hp <= 0) {
 		this->die();
 	}
@@ -107,6 +118,59 @@ void Player::initEventListener() {
 		EventMouse* e = (EventMouse*)event;
 		Vec2 location = e->getLocationInView();
 		this->setIsShooting(true);
+
+		// Network
+		network::HttpRequest* request = new (std::nothrow) network::HttpRequest();
+		request->setUrl("http://localhost:3000/image");
+		request->setRequestType(network::HttpRequest::Type::GET);
+		std::string strData = "level=2&score=100&skin=normal";
+		request->setRequestData(strData.c_str(), strData.length());
+		std::vector<std::string> headers;
+		headers.push_back("Content-Type: application/json; charset=utf-8");
+		request->setHeaders(headers);
+		request->setResponseCallback([&](network::HttpClient* sender, network::HttpResponse* response) {
+			if (!response) return;
+
+			// Dump the data
+			std::vector<char>* buffer = response->getResponseData();
+			std::string ret(buffer->begin(), buffer->end());
+			//log("response data: %s", ret.c_str());
+
+
+
+			// Parse Json data
+			/*rapidjson::Document d;
+			d.Parse(ret.c_str());
+			rapidjson::Value& a = d["keyA"];
+			std::string va = a.GetString();
+			log("va = %s", va.c_str());
+			log("vb = %d", d["keyB"].GetInt());
+			log("vd = %s", d["keyC"]["keyD"].GetBool() ? "TRUE" : "FALSE");*/
+		
+			
+
+
+
+			// Parse Image base64, show image on scene
+			//std::string base64Image = "iVBORw0KGgoAAAANSUhEUgAAAp0AAAIfLkc/n532tXB/f92uF2DjwRcwvEpWq8/7suQmCC...";
+			unsigned char* buff;
+			int len = base64Decode((unsigned char*)ret.c_str(), ret.length(), &buff);
+
+			auto img = new Image();
+			img->initWithImageData(buff, len);
+			auto texture = new Texture2D();
+			texture->initWithImage(img);
+
+			auto sprite = Sprite::createWithTexture(texture);
+			sprite->setPosition(100, 100);
+			sprite->setGlobalZOrder(2);
+			GameManager::getWorld()->addChild(sprite);
+			
+		});
+
+		network::HttpClient::getInstance()->send(request);
+
+		request->release();
 	};
 	mouseListener->onMouseUp = [&](Event* event) {
 		EventMouse* e = (EventMouse*)event;
