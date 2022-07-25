@@ -24,7 +24,7 @@
 
 #include "AppDelegate.h"
 #include "Lesson9.h"
-#include "Lesson10.h"
+#include "Lesson15.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -110,7 +110,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
 
-    auto scene = Lesson10::createScene();
+    auto scene = Lesson15::createScene();
     
 
     // Physics world debug draw
