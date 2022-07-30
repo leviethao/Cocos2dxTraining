@@ -34,14 +34,19 @@ void GunLV2::init()
 }
 
 void GunLV2::shooting() {
+	// Alway aim to top
 	auto aimAngle = this->sprite->getRotation() * -1;
 	Vec2 aimDirection = Vec2(0, 1);
 	aimDirection.rotate(Vec2(0, 0), aimAngle * M_PI / 180);
 
 	auto point1 = aimDirection;
-	auto point2 = aimDirection * 10;
-	auto point1WorldSpace = GameManager::getWorld()->convertToNodeSpace(sprite->getParent()->convertToWorldSpace(point1));
-	auto point2WorldSpace = GameManager::getWorld()->convertToNodeSpace(sprite->getParent()->convertToWorldSpace(point2));
+	auto point2 = aimDirection * 10;	
+	auto point1WorldSpace = GameManager::getWorld()->convertToNodeSpace(
+		sprite->getParent()->convertToWorldSpace(point1)
+	);
+	auto point2WorldSpace = GameManager::getWorld()->convertToNodeSpace(
+		sprite->getParent()->convertToWorldSpace(point2)
+	);
 	aimDirection = point2WorldSpace - point1WorldSpace;
 
 	aimDirection.normalize();

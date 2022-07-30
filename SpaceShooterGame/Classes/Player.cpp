@@ -6,6 +6,8 @@
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 
+#include "SQLite/sqlite3.h"
+
 USING_NS_CC;
 
 Player::Player(): Entity("Player.png") {
@@ -14,6 +16,13 @@ Player::Player(): Entity("Player.png") {
 	this->body->setCollisionBitmask(PLAYER_COLLISION_BITMASK);
 
 	this->init();
+
+
+
+
+	// connect to server
+	/*_client = network::SocketIO::connect("http://127.0.0.1:3001", *this);
+	_client->on("message", CC_CALLBACK_2(Player::onReceiveEvent, this));*/
 }
 
 Player::~Player() {
@@ -107,7 +116,7 @@ void Player::update(float dt) {
 	Entity::update(dt);
 
 	if (this->hp <= 0) {
-		this->die();
+		//this->die();
 	}
 }
 
@@ -121,12 +130,12 @@ void Player::initEventListener() {
 
 		// Network
 		network::HttpRequest* request = new (std::nothrow) network::HttpRequest();
-		request->setUrl("http://localhost:3000/image");
-		request->setRequestType(network::HttpRequest::Type::GET);
+		request->setUrl("http://localhost:3000/updatePlayer");
+		request->setRequestType(network::HttpRequest::Type::POST);
 		std::string strData = "level=2&score=100&skin=normal";
 		request->setRequestData(strData.c_str(), strData.length());
 		std::vector<std::string> headers;
-		headers.push_back("Content-Type: application/json; charset=utf-8");
+		headers.push_back("Content-Type: application/x-www-form-urlencoded");
 		request->setHeaders(headers);
 		request->setResponseCallback([&](network::HttpClient* sender, network::HttpResponse* response) {
 			if (!response) return;
@@ -153,7 +162,7 @@ void Player::initEventListener() {
 
 			// Parse Image base64, show image on scene
 			//std::string base64Image = "iVBORw0KGgoAAAANSUhEUgAAAp0AAAIfLkc/n532tXB/f92uF2DjwRcwvEpWq8/7suQmCC...";
-			unsigned char* buff;
+			/*unsigned char* buff;
 			int len = base64Decode((unsigned char*)ret.c_str(), ret.length(), &buff);
 
 			auto img = new Image();
@@ -164,13 +173,108 @@ void Player::initEventListener() {
 			auto sprite = Sprite::createWithTexture(texture);
 			sprite->setPosition(100, 100);
 			sprite->setGlobalZOrder(2);
-			GameManager::getWorld()->addChild(sprite);
+			GameManager::getWorld()->addChild(sprite);*/
 			
 		});
 
-		network::HttpClient::getInstance()->send(request);
+		network::HttpClient::getInstance()->sendImmediate(request);
 
 		request->release();
+
+
+
+
+		//SQLite
+		sqlite3* db = NULL;
+		std::string dbPath = FileUtils::getInstance()->getWritablePath() + "myDatabase.db";
+		int result = sqlite3_open(dbPath.c_str(), &db);
+		if (result == SQLITE_OK) {
+			log("open database successful, dbPath: %s", dbPath.c_str());
+			
+			// Create Table
+			result = 0;
+			std::string sql;
+			sql = "create table " +
+			std::string("Master") +
+			std::string(" (id TEXT PRIMARY KEY, value INT);");
+			result = sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+			if (result == SQLITE_OK) {
+				log("create table Master successfuly");
+			}
+			else {
+				log("create talbe Master failed");
+			}
+			//
+
+			// Select
+			std::string key = "User003";
+
+			sql = "SELECT value " +
+			std::string(" FROM ") +
+			std::string("Master") +
+			std::string(" WHERE id='") +
+			std::string(key.c_str()) +
+			std::string("' LIMIT 1;");
+
+			sql = "select value from Master where id='User003';";
+
+			sqlite3_stmt* statement;
+			if (sqlite3_prepare_v2(db, sql.c_str(), -1, &statement, 0) == SQLITE_OK)
+			{
+				int result = 0;
+
+				while (true)
+				{
+					result = sqlite3_step(statement);
+
+					if (result == SQLITE_ROW)
+					{
+						// do something with the row.
+						//Log for select all 
+						const unsigned char* id = sqlite3_column_text(statement, 0);
+						int value = sqlite3_column_int(statement, 1);
+						log("id = %s, value = %d", id, value);
+
+						// Log for Select by id
+						//const unsigned char* id = sqlite3_column_text(statement, 0);
+						//log("id = %s",id);
+					}
+					else
+					{
+						log("Result not found");
+						break;
+					}
+				}
+			}
+			//
+
+
+			// Insert
+			std::string id = "User002";
+			int value = 10;
+			sql = "INSERT INTO " +
+			std::string("Master ") +
+			std::string("VALUES (") +
+			std::string(id.c_str()) +
+			std::string(", ") +
+			std::to_string(value) +	
+			std::string(");");
+
+			sql = "insert into Master (id, value) values ('User003', 13)";
+			char* err;
+			result = sqlite3_exec(db, sql.c_str(), NULL, NULL, &err);
+			if (result == SQLITE_OK) {
+				log("Insert success");
+			}
+			else {
+				log("Insert failed");
+			}
+
+		}
+		else {
+			log("open database failed");
+		}
+
 	};
 	mouseListener->onMouseUp = [&](Event* event) {
 		EventMouse* e = (EventMouse*)event;
@@ -255,3 +359,26 @@ void Player::levelUp() {
 	}
 }
 
+
+void Player::onConnect(network::SIOClient* client) {
+	// SocketIO::connect success
+	log("SocketIO connect sucess!");
+	_client->emit("message", "User001 connect success");
+}
+void Player::onMessage(network::SIOClient* client, const std::string& data) {
+	// SocketIO::send receive
+	log("On Message: data from socket server: %s", data.c_str());
+	_client->emit("message", "User001 reply message");
+}
+void Player::onClose(network::SIOClient* client) {
+	// SocketIO::disconnect success
+	log("On Close: socket disconnect success");
+}
+void Player::onError(network::SIOClient* client, const std::string& data) {
+	// SocketIO::failed
+	log("On Error: socket failed!");
+}
+
+void Player::onReceiveEvent(network::SIOClient* client, const std::string& data) {
+	log("On Receive Event: data from socket server: %s", data.c_str());
+};

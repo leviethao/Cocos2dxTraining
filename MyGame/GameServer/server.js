@@ -12,18 +12,19 @@ app.get('/', (req, res) => {
 
 io.on('connection', socket => {
     socket.emit('message', 'Welcome ' + socket.id)
-    io.emit('message', 'message broadcast from server');
     
     socket.join(9); // Join Room
     // Send message to room
-    io.to(9).emit('message', 'Server send message to room 9')
+    // io.to(9).emit('message', 'Server send message to room 9')
 
-    socket.on('message', data => {
-        console.log('message from client: ', data)
-    })
     socket.on('SayHello', data => {
         console.log('Receive event from ',socket.id, ': ', data)
         io.emit('ClientMessage', data)
+    })
+
+    socket.on('updateLocation', data => {
+        // console.log("updateLocation data: ", JSON.parse(data))
+        io.to(9).emit('friendMove', JSON.parse(data))
     })
 })
 
