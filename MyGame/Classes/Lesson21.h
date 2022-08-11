@@ -27,14 +27,38 @@
 
 #include "cocos2d.h"
 
+
+class Player {
+public:
+    cocos2d::Sprite* sprite;
+    cocos2d::PhysicsBody* body;
+    cocos2d::Vec2 direction;
+    float jumpFac;
+
+    Player();
+    ~Player();
+
+    void jump();
+
+    void move();
+};
+
 class Lesson21 : public cocos2d::Scene
 {
 private:
     cocos2d::ParallaxNode* parallaxNode;
     std::vector<cocos2d::Sprite*> frontList;
+    std::vector<cocos2d::Sprite*> backList;
     cocos2d::Vec2 startPos;
+
+    float backgroundSpeed;
+    cocos2d::Vec2 backgroundDirection;
+
+    Player* player;
+
     void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
     void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
+    void scrollParallax(float delta, std::vector<cocos2d::Sprite*> &list);
 public:
     static cocos2d::Scene* createScene();
 

@@ -13,7 +13,7 @@ bool Lesson21::init()
 {
     //////////////////////////////
     // 1. super init first
-    if ( !Scene::init() )
+    if ( !Scene::initWithPhysics() )
     {
         return false;
     }
@@ -27,18 +27,33 @@ bool Lesson21::init()
 	keyboardListener->onKeyReleased = CC_CALLBACK_2(Lesson21::onKeyReleased, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 
-    auto back = Sprite::create("back.png");
-	back->setAnchorPoint(Vec2(0, 0));
-    back->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height));
+	auto back1 = Sprite::create("back.jpg");
+	back1->setAnchorPoint(Vec2(0, 0));
+	back1->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height));
+
+    auto back2 = Sprite::create("back.jpg");
+	back2->setAnchorPoint(Vec2(0, 0));
+    back2->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height));
+	back2->setPosition(Vec2(back1->getPositionX() + back1->getContentSize().width + 10,
+		back1->getPositionY()));
     
-    auto front1 = Sprite::create("front.png");
-	front1->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height * 0.5));
+	auto back = Node::create();
+	back->setContentSize(visibleSize);
+	back->setAnchorPoint(Vec2(0, 0));
+	back->addChild(back1);
+	back->addChild(back2);
+
+	this->backList.push_back(back1);
+	this->backList.push_back(back2);
+
+    auto front1 = Sprite::create("front.jpg");
+	front1->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height * 0.3));
 	front1->setAnchorPoint(Vec2(0, 0));
-	auto front2 = Sprite::create("front.png");
-	front2->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height * 0.5));
+	auto front2 = Sprite::create("front.jpg");
+	front2->setContentSize(Size(visibleSize.width * 1.5, visibleSize.height * 0.3));
 	front2->setAnchorPoint(Vec2(0, 0));
 	auto front = Node::create();
-	front->setContentSize(visibleSize);
+	front->setContentSize(Size(visibleSize.width, visibleSize.height * 0.3));
 	front->setAnchorPoint(Vec2(0, 0));
 	front->addChild(front1);
 	front->addChild(front2);
@@ -57,6 +72,37 @@ bool Lesson21::init()
     addChild(this->parallaxNode);
 	this->startPos = this->parallaxNode->getPosition();
 
+	this->backgroundSpeed = 1000;
+	this->backgroundDirection = Vec2::ZERO;
+
+	this->player = new Player();
+	addChild(this->player->sprite);
+	this->player->sprite->setPosition(visibleSize / 2);
+
+	// create land body
+	getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getPhysicsWorld()->setGravity(Vec2(0, -980));
+	auto landBody = PhysicsBody::createBox(front1->getContentSize());
+	landBody->setDynamic(false);
+	auto landBody2 = PhysicsBody::createBox(front2->getContentSize());
+	landBody2->setDynamic(false);
+	front1->addComponent(landBody);
+	front2->addComponent(landBody2);
+
+	// create obstacles
+	const int OBSTACLES_NUM = 5;
+	for (int i = 0; i < 5; i++) {
+		auto obstacle = Sprite::create();
+		obstacle->setContentSize(Size(50, 100));
+		obstacle->setColor(Color3B::RED);
+		obstacle->setPosition(600, 400);
+		auto body = PhysicsBody::createBox(obstacle->getContentSize(),
+			PhysicsMaterial(0.9, 0, 0));
+		body->setMass(30000);
+		obstacle->addComponent(body);
+		front->addChild(obstacle);
+	}
+
 	scheduleUpdate();
     return true;
 }
@@ -68,21 +114,23 @@ void Lesson21::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event) {
 
 	switch (keyCode) {
 	case EventKeyboard::KeyCode::KEY_W:
+		this->player->jump();
 		break;
 	case EventKeyboard::KeyCode::KEY_S:
 		break;
 	case EventKeyboard::KeyCode::KEY_A:
-		this->parallaxNode->stopAllActions();
-		this->parallaxNode->runAction(MoveBy::create(2, Vec2(2000, 0)));
+		backgroundDirection.x = 1;
+		this->player->sprite->setFlippedX(true);
 		break;
 	case EventKeyboard::KeyCode::KEY_D:
-		this->parallaxNode->stopAllActions();
-		this->parallaxNode->runAction(MoveBy::create(2, Vec2(-2000, 0)));
+		this->player->sprite->setFlippedX(false);
+		backgroundDirection.x = -1;
 		break;
 	default:
 		break;
 	}
 
+	backgroundDirection.normalize();
 }
 
 void Lesson21::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event) {
@@ -93,41 +141,78 @@ void Lesson21::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event) {
 		break;
 	case EventKeyboard::KeyCode::KEY_A:
 	case EventKeyboard::KeyCode::KEY_D:
-		this->parallaxNode->stopAllActions();
+		backgroundDirection.x = 0;
 		break;
 	default:
 		break;
 	}
 
+	backgroundDirection.normalize();
 }
+
+
 
 void Lesson21::update(float dt) {
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
 	float delta = (parallaxNode->getPositionX() - startPos.x) * -1;
-	float frontLeftEdge = frontList[0]->getPositionX() + 50;
-	float frontRightEdge = frontList[1]->getPositionX() + frontList[1]->getContentSize().width - 50;
+	scrollParallax(delta, frontList);
+	scrollParallax(delta * 0.2, backList);
 
-	if (delta + visibleSize.width > frontRightEdge) {
-		float front0X = frontList[1]->getPositionX() + frontList[1]->getContentSize().width + 10;
-		
-		frontList[0]->setPosition(front0X, frontList[0]->getPositionY());
+	// move background
+	Vec2 currentPosition = parallaxNode->getPosition();
+	this->parallaxNode->setPosition(currentPosition.x + 
+		backgroundSpeed * dt * backgroundDirection.x, currentPosition.y);
+}
 
-		Sprite* temp = frontList[0];
-		frontList[0] = frontList[1];
-		frontList[1] = temp;
+void Lesson21::scrollParallax(float delta, std::vector<Sprite*> &list) {
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+	float leftEdge = list[0]->getPositionX() + 50;
+	float rightEdge = list[1]->getPositionX() + list[1]->getContentSize().width - 50;
+
+	if (delta + visibleSize.width > rightEdge) {
+		float list0X = list[1]->getPositionX() + list[1]->getContentSize().width + 10;
+
+		list[0]->setPosition(list0X, list[0]->getPositionY());
+
+		Sprite* temp = list[0];
+		list[0] = list[1];
+		list[1] = temp;
 		log("to right edge");
 	}
-	else if (delta < frontLeftEdge) {
-		float front1X = frontList[0]->getPositionX() - frontList[1]->getContentSize().width - 10;
+	else if (delta <leftEdge) {
+		float list1X = list[0]->getPositionX() - list[1]->getContentSize().width - 10;
 
-		frontList[1]->setPosition(front1X, frontList[1]->getPositionY());
+		list[1]->setPosition(list1X, list[1]->getPositionY());
 
-		Sprite* temp = frontList[0];
-		frontList[0] = frontList[1];
-		frontList[1] = temp;
+		Sprite* temp = list[0];
+		list[0] = list[1];
+		list[1] = temp;
 		log("to left edge");
 	}
-	log("delta: %.2f, left: %.2f, right: %.2f",
-		delta, frontLeftEdge, frontRightEdge);
+}
+
+Player::Player() {
+	this->sprite = Sprite::create("Player.png");
+	this->sprite->setContentSize(Size(100, 100));
+	this->body = PhysicsBody::createBox(Size(50, 90), PhysicsMaterial(0.9f, 0, 0));
+	this->body->setMass(10000);
+	this->direction = Vec2::ZERO;
+	this->sprite->addComponent(this->body);
+	this->jumpFac = 400;
+}
+
+Player::~Player() {
+
+}
+
+void Player::move() {
+
+}
+
+void Player::jump() {
+	this->body->setVelocity(Vec2(0, this->jumpFac));
 }
